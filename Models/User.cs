@@ -25,12 +25,12 @@ namespace Homera.Models
         // Navigation properties
 
         // Client -> Tasks
-        public ICollection<TaskItem> CreatedTasks { get; set; }
+        public virtual ICollection<TaskItem>? CreatedTasks { get; set; }
 
         // Housekeeper -> Assigned tasks
-        public ICollection<TaskItem> AssignedTasks { get; set; }
+        public virtual ICollection<TaskItem>? AssignedTasks { get; set; }
 
         // Client -> Locations
-        public ICollection<Location> Locations { get; set; }
+        public virtual ICollection<Location>? Locations { get; set; }
     }
 }

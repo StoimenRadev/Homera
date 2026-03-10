@@ -30,14 +30,14 @@ namespace Homera.Models
 
         // CLIENT (Creator)
         public int ClientId { get; set; }
-        public User Client { get; set; }
+        public virtual User? Client { get; set; }
 
         // HOUSEKEEPER (Assigned)
         public int? HousekeeperId { get; set; }
-        public User Housekeeper { get; set; }
+        public virtual User? Housekeeper { get; set; }
 
         // LOCATION
         public int LocationId { get; set; }
-        public Location Location { get; set; }
+        public virtual Location? Location { get; set; }
     }
 }

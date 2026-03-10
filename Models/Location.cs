@@ -15,9 +15,9 @@ namespace Homera.Models
 
         // Client owner
         public int ClientId { get; set; }
-        public User Client { get; set; }
+        public virtual User? Client { get; set; }
 
         // Tasks in this location
-        public ICollection<TaskItem> Tasks { get; set; }
+        public virtual ICollection<TaskItem>? Tasks { get; set; }
     }
 }
