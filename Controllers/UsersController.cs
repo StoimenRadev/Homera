@@ -15,13 +15,13 @@ namespace Homera.Controllers
     public class UsersController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly UserManager<User> _userManager;
+        private readonly RoleManager<IdentityRole<int>> _roleManager;
 
         public UsersController(
             ApplicationDbContext context,
-            UserManager<IdentityUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            UserManager<User> userManager,
+            RoleManager<IdentityRole<int>> roleManager)
         {
             _context = context;
             _userManager = userManager;
@@ -53,7 +53,8 @@ namespace Homera.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(m => m.Id == id);
             if (user == null) return NotFound();
 
-            var identityUser = await _userManager.FindByNameAsync(user.Username);
+            if (string.IsNullOrEmpty(user.UserName)) return NotFound();
+            var identityUser = await _userManager.FindByNameAsync(user.UserName);
             if (identityUser != null)
             {
                 var roles = await _userManager.GetRolesAsync(identityUser);
@@ -74,26 +75,26 @@ namespace Homera.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind("Id,FirstName,LastName,Username,Password")] User user,
-            string role)
+            [Bind("Id,FirstName,LastName,UserName")] User user,
+            string role,
+            string password)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(user);
-                await _context.SaveChangesAsync();
-
-                if (!string.IsNullOrEmpty(role))
+                var result = await _userManager.CreateAsync(user, password);
+                if (result.Succeeded)
                 {
-                    if (!await _roleManager.RoleExistsAsync(role))
-                        await _roleManager.CreateAsync(new IdentityRole(role));
+                    if (!string.IsNullOrEmpty(role))
+                    {
+                        if (!await _roleManager.RoleExistsAsync(role))
+                            await _roleManager.CreateAsync(new IdentityRole<int>(role));
 
-                    var identityUser = await _userManager.FindByNameAsync(user.Username);
-                    if (identityUser != null)
-                        await _userManager.AddToRoleAsync(identityUser, role);
+                        await _userManager.AddToRoleAsync(user, role);
+                    }
+                    return RedirectToAction(nameof(Index));
                 }
-
-                return RedirectToAction(nameof(Index));
-            }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
             PopulateRolesDropdown();
             return View(user);
         }
@@ -115,7 +116,7 @@ namespace Homera.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
             int id,
-            [Bind("Id,FirstName,LastName,Username,Password")] User user,
+            [Bind("Id,FirstName,LastName,UserName")] User user,
             string role)
         {
             if (id != user.Id) return NotFound();
@@ -130,9 +131,10 @@ namespace Homera.Controllers
                     if (!string.IsNullOrEmpty(role))
                     {
                         if (!await _roleManager.RoleExistsAsync(role))
-                            await _roleManager.CreateAsync(new IdentityRole(role));
+                            await _roleManager.CreateAsync(new IdentityRole<int>(role));
 
-                        var identityUser = await _userManager.FindByNameAsync(user.Username);
+                        if (string.IsNullOrEmpty(user.UserName)) return NotFound();
+                        var identityUser = await _userManager.FindByNameAsync(user.UserName); 
                         if (identityUser != null)
                         {
                             var currentRoles = await _userManager.GetRolesAsync(identityUser);
@@ -162,7 +164,7 @@ namespace Homera.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(m => m.Id == id);
             if (user == null) return NotFound();
 
-            var identityUser = await _userManager.FindByNameAsync(user.Username);
+            var identityUser = await _userManager.FindByNameAsync(user.UserName); 
             if (identityUser != null)
             {
                 var roles = await _userManager.GetRolesAsync(identityUser);
