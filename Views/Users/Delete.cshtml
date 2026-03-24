@@ -1,4 +1,4 @@
-﻿@model Homera.Models.User
+@model Homera.Models.User
 
 @{
     ViewData["Title"] = "Delete";
@@ -36,10 +36,10 @@
             @Html.DisplayFor(model => model.Password)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Role)
+            Role
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Role)
+            @ViewBag.UserRole
         </dd>
     </dl>
     

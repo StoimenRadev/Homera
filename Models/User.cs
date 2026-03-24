@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Homera.Models.Enums;
 
 namespace Homera.Models
 {
@@ -20,7 +19,6 @@ namespace Homera.Models
         [Required]
         public string Password { get; set; }
 
-        public UserRole Role { get; set; }
 
         // Navigation properties
 

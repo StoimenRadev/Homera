@@ -1,9 +1,9 @@
-﻿namespace Homera.Models.Enums
+namespace Homera.Models.Enums
 {
-    public enum UserRole
+    public static class UserRole
     {
-        Administrator = 0, 
-        Housekeeper = 1,
-        Client = 2
+        public const string Administrator = "Administrator";
+        public const string Housekeeper = "Housekeeper";
+        public const string Client = "Client";
     }
 }
