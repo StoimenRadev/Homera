@@ -1,4 +1,4 @@
-﻿@model Homera.Models.Location
+@model Homera.Models.Location
 
 @{
     ViewData["Title"] = "Create";
@@ -10,26 +10,54 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Create" id="locationForm">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
+            <input type="hidden" asp-for="Latitude" id="Latitude" />
+            <input type="hidden" asp-for="Longitude" id="Longitude" />
+            
+            <div class="form-group mb-2">
                 <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
+                <input asp-for="Name" class="form-control" placeholder="e.g. My Home" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Address" class="control-label"></label>
-                <input asp-for="Address" class="form-control" />
-                <span asp-validation-for="Address" class="text-danger"></span>
+            <div class="form-group mb-2">
+                <label asp-for="Street" class="control-label"></label>
+                <input asp-for="Street" class="form-control" />
+                <span asp-validation-for="Street" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-2">
+                <label asp-for="HouseNumber" class="control-label"></label>
+                <input asp-for="HouseNumber" class="form-control" />
+                <span asp-validation-for="HouseNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-2">
+                <label asp-for="Neighbourhood" class="control-label"></label>
+                <input asp-for="Neighbourhood" class="form-control" />
+                <span asp-validation-for="Neighbourhood" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-2">
+                <label asp-for="City" class="control-label"></label>
+                <input asp-for="City" class="form-control" />
+                <span asp-validation-for="City" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-2">
+                <label asp-for="PostalCode" class="control-label"></label>
+                <input asp-for="PostalCode" class="form-control" />
+                <span asp-validation-for="PostalCode" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Country" class="control-label"></label>
+                <input asp-for="Country" class="form-control" />
+                <span asp-validation-for="Country" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ClientId" class="control-label"></label>
-                <select asp-for="ClientId" class ="form-control" asp-items="ViewBag.ClientId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Create" class="btn btn-primary w-100" />
             </div>
         </form>
+    </div>
+    <div class="col-md-8">
+        <label class="form-label">Pick on Map / Search Address:</label>
+        <div id="map" style="height: 500px; border-radius: 8px; border: 1px solid #ddd;"></div>
     </div>
 </div>
 
@@ -39,4 +67,74 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Default center (Burgas, Bulgaria as requested by user)
+            var defaultLat = 42.5048;
+            var defaultLon = 27.4626;
+
+            var map = L.map('map').setView([defaultLat, defaultLon], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            var marker = L.marker([defaultLat, defaultLon], { draggable: true }).addTo(map);
+
+            // Geocoder (Search Bar)
+            var geocoder = L.Control.geocoder({
+                defaultMarkGeocode: false
+            })
+            .on('markgeocode', function(e) {
+                var bbox = e.geocode.bbox;
+                var poly = L.polygon([
+                    bbox.getSouthEast(),
+                    bbox.getNorthEast(),
+                    bbox.getNorthWest(),
+                    bbox.getSouthWest()
+                ]);
+                map.fitBounds(poly.getBounds());
+                marker.setLatLng(e.geocode.center);
+                updateFields(e.geocode.center, e.geocode.properties);
+            })
+            .addTo(map);
+
+            marker.on('dragend', function (e) {
+                var latlng = marker.getLatLng();
+                reverseGeocode(latlng);
+            });
+
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                reverseGeocode(e.latlng);
+            });
+
+            function reverseGeocode(latlng) {
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}&addressdetails=1`)
+                    .then(response => response.json())
+                    .then(data => {
+                        updateFields(latlng, data.address);
+                    });
+            }
+
+            function updateFields(latlng, address) {
+                document.getElementById('Latitude').value = latlng.lat;
+                document.getElementById('Longitude').value = latlng.lng;
+
+                if (address) {
+                    document.querySelector('[name="Street"]').value = address.road || address.pedestrian || "";
+                    document.querySelector('[name="HouseNumber"]').value = address.house_number || "";
+                    document.querySelector('[name="Neighbourhood"]').value = address.suburb || address.neighbourhood || "";
+                    document.querySelector('[name="City"]').value = address.city || address.town || address.village || "";
+                    document.querySelector('[name="PostalCode"]').value = address.postcode || "";
+                    document.querySelector('[name="Country"]').value = address.country || "";
+                }
+            }
+        });
+    </script>
 }
