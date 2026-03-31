@@ -82,12 +82,22 @@
                 @Html.DisplayFor(modelItem => item.Housekeeper!.FirstName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Location!.Address)
+                @Html.DisplayFor(modelItem => item.Location!.DisplayName)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                @if (item.Status == Homera.Models.Enums.TaskItemStatus.Pending)
+                {
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> @:|
+                    <a asp-action="Delete" asp-route-id="@item.Id">Cancel</a> @:|
+                }
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                @if (item.Status == Homera.Models.Enums.TaskItemStatus.InReview)
+                {
+                    @:|
+                    <form asp-action="Complete" asp-route-id="@item.Id" method="post" style="display:inline;">
+                        <input type="submit" value="Complete" class="btn btn-sm btn-success" />
+                    </form>
+                }
             </td>
         </tr>
 }

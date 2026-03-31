@@ -74,11 +74,20 @@
             @Html.DisplayNameFor(model => model.Location)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Location!.Address)
+            @Html.DisplayFor(model => model.Location!.DisplayName)
         </dd>
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    @if (Model?.Status == Homera.Models.Enums.TaskItemStatus.Pending)
+    {
+        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> @:|
+    }
+    @if (Model?.Status == Homera.Models.Enums.TaskItemStatus.InReview)
+    {
+        <form asp-action="Complete" asp-route-id="@Model?.Id" method="post" style="display:inline;">
+            <input type="submit" value="Complete" class="btn btn-sm btn-success" />
+        </form> @:|
+    }
     <a asp-action="Index">Back to List</a>
 </div>
