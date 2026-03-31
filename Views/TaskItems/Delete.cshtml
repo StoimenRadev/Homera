@@ -1,4 +1,4 @@
-﻿@model Homera.Models.TaskItem
+@model Homera.Models.TaskItem
 
 @{
     ViewData["Title"] = "Delete";
@@ -63,19 +63,19 @@
             @Html.DisplayNameFor(model => model.Client)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Client.FirstName)
+            @Html.DisplayFor(model => model.Client!.FirstName)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Housekeeper)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Housekeeper.FirstName)
+            @Html.DisplayFor(model => model.Housekeeper!.FirstName)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Location)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Location.Address)
+            @Html.DisplayFor(model => model.Location!.Address)
         </dd>
     </dl>
     

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Homera.Models
@@ -8,10 +8,10 @@ namespace Homera.Models
         public int Id { get; set; }
 
         [Required]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         [Required]
-        public string Address { get; set; }
+        public string Address { get; set; } = null!;
 
         // Client owner
         public int ClientId { get; set; }

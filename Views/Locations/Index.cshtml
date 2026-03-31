@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Homera.Models.Location>
+@model IEnumerable<Homera.Models.Location>
 
 @{
     ViewData["Title"] = "Index";
@@ -34,7 +34,7 @@
                 @Html.DisplayFor(modelItem => item.Address)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Client.FirstName)
+                @Html.DisplayFor(modelItem => item.Client!.FirstName)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

@@ -7,10 +7,10 @@ namespace Homera.Models
     public class User : IdentityUser<int>
     {
         [Required]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = null!;
 
         [Required]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = null!;
 
 
         // Navigation properties

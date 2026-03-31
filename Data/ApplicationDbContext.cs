@@ -12,8 +12,8 @@ namespace Homera.Data
         {
         }
 
-        public DbSet<Location> Locations { get; set; }
-        public DbSet<TaskItem> Tasks { get; set; }
+        public DbSet<Location> Locations { get; set; } = null!;
+        public DbSet<TaskItem> Tasks { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

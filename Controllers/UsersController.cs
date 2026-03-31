@@ -60,6 +60,10 @@ namespace Homera.Controllers
                 var roles = await _userManager.GetRolesAsync(identityUser);
                 ViewBag.UserRole = string.Join(", ", roles);
             }
+            else
+            {
+                ViewBag.UserRole = "No roles";
+            }
 
             return View(user);
         }
@@ -164,11 +168,14 @@ namespace Homera.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(m => m.Id == id);
             if (user == null) return NotFound();
 
-            var identityUser = await _userManager.FindByNameAsync(user.UserName); 
-            if (identityUser != null)
+            if (user.UserName != null)
             {
-                var roles = await _userManager.GetRolesAsync(identityUser);
-                ViewBag.UserRole = string.Join(", ", roles);
+                var identityUser = await _userManager.FindByNameAsync(user.UserName); 
+                if (identityUser != null)
+                {
+                    var roles = await _userManager.GetRolesAsync(identityUser);
+                    ViewBag.UserRole = string.Join(", ", roles);
+                }
             }
 
             return View(user);

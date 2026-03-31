@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Homera.Models.TaskItem>
+@model IEnumerable<Homera.Models.TaskItem>
 
 @{
     ViewData["Title"] = "Index";
@@ -76,13 +76,13 @@
                 @Html.DisplayFor(modelItem => item.ImagePath)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Client.FirstName)
+                @Html.DisplayFor(modelItem => item.Client!.FirstName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Housekeeper.FirstName)
+                @Html.DisplayFor(modelItem => item.Housekeeper!.FirstName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Location.Address)
+                @Html.DisplayFor(modelItem => item.Location!.Address)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
