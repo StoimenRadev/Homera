@@ -20,30 +20,30 @@ namespace Homera.Areas.Identity.Pages.Account.Manage
             _signInManager = signInManager;
         }
 
-        public string Email { get; set; }
-
+        public string Email { get; set; } = null!;
+ 
         [TempData]
-        public string StatusMessage { get; set; }
-
+        public string? StatusMessage { get; set; }
+ 
         [BindProperty]
-        public InputModel Input { get; set; }
+        public InputModel Input { get; set; } = null!;
 
         public class InputModel
         {
             [Required]
             [EmailAddress]
             [Display(Name = "New email")]
-            public string NewEmail { get; set; }
+            public string NewEmail { get; set; } = null!;
         }
 
         private async Task LoadAsync(User user)
         {
             var email = await _userManager.GetEmailAsync(user);
-            Email = email;
-
+            Email = email ?? "";
+ 
             Input = new InputModel
             {
-                NewEmail = email,
+                NewEmail = email ?? "",
             };
         }
 

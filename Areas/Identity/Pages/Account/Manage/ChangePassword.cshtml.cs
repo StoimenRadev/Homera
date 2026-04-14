@@ -25,10 +25,10 @@ namespace Homera.Areas.Identity.Pages.Account.Manage
         }
 
         [BindProperty]
-        public InputModel Input { get; set; }
-
+        public InputModel Input { get; set; } = null!;
+ 
         [TempData]
-        public string StatusMessage { get; set; }
+        public string? StatusMessage { get; set; }
 
         public class InputModel
         {

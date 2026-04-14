@@ -20,27 +20,27 @@ namespace Homera.Areas.Identity.Pages.Account.Manage
             _signInManager = signInManager;
         }
 
-        public string Username { get; set; }
-
+        public string Username { get; set; } = null!;
+ 
         [TempData]
-        public string StatusMessage { get; set; }
-
+        public string? StatusMessage { get; set; }
+ 
         [BindProperty]
-        public InputModel Input { get; set; }
+        public InputModel Input { get; set; } = null!;
 
         public class InputModel
         {
             [Required]
             [Display(Name = "First Name")]
-            public string FirstName { get; set; }
+            public string FirstName { get; set; } = null!;
 
             [Required]
             [Display(Name = "Last Name")]
-            public string LastName { get; set; }
+            public string LastName { get; set; } = null!;
 
             [Phone]
             [Display(Name = "Phone number")]
-            public string PhoneNumber { get; set; }
+            public string? PhoneNumber { get; set; }
         }
 
         private async Task LoadAsync(User user)
@@ -48,7 +48,7 @@ namespace Homera.Areas.Identity.Pages.Account.Manage
             var userName = await _userManager.GetUserNameAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
 
-            Username = userName;
+            Username = userName ?? "";
 
             Input = new InputModel
             {
