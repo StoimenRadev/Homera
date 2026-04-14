@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -7,8 +8,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Homera.Data;
 using Homera.Models;
-
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Homera.Models.Enums;
 
@@ -19,11 +20,13 @@ namespace Homera.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
+        private readonly IWebHostEnvironment _hostEnvironment;
 
-        public TaskItemsController(ApplicationDbContext context, UserManager<User> userManager)
+        public TaskItemsController(ApplicationDbContext context, UserManager<User> userManager, IWebHostEnvironment hostEnvironment)
         {
             _context = context;
             _userManager = userManager;
+            _hostEnvironment = hostEnvironment;
         }
 
         // GET: TaskItems
@@ -37,11 +40,15 @@ namespace Homera.Controllers
                 .Include(t => t.Housekeeper)
                 .Include(t => t.Location);
 
-            if (!await _userManager.IsInRoleAsync(user, UserRole.Administrator))
+            if (await _userManager.IsInRoleAsync(user, UserRole.Housekeeper))
+            {
+                tasks = tasks.Where(t => t.HousekeeperId == user.Id);
+            }
+            else if (!await _userManager.IsInRoleAsync(user, UserRole.Administrator))
             {
                 tasks = tasks.Where(t => t.ClientId == user.Id);
             }
-
+ 
             return View(await tasks.ToListAsync());
         }
 
@@ -61,11 +68,10 @@ namespace Homera.Controllers
 
             if (taskItem == null) return NotFound();
 
-            if (taskItem.ClientId != user.Id && !await _userManager.IsInRoleAsync(user, UserRole.Administrator))
+            if (taskItem.ClientId != user.Id && 
+                taskItem.HousekeeperId != user.Id && 
+                !await _userManager.IsInRoleAsync(user, UserRole.Administrator))
             {
-                // Note: Housekeeper should also be allowed to see it if assigned, but we'll focus on Client for now.
-                // Or just allow all for now but filter Index.
-                // Better to be strict.
                 return Forbid();
             }
 
@@ -80,6 +86,7 @@ namespace Homera.Controllers
             if (user == null) return Challenge();
 
             ViewData["LocationId"] = new SelectList(_context.Locations.Where(l => l.ClientId == user.Id), "Id", "DisplayName", locationId);
+            await PopulateHousekeepersDropdown();
             return View();
         }
 
@@ -89,14 +96,14 @@ namespace Homera.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = UserRole.Client)]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Budget,Deadline,Category,LocationId")] TaskItem taskItem)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description,Budget,Deadline,Category,LocationId,HousekeeperId")] TaskItem taskItem)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
             taskItem.ClientId = user.Id;
-            taskItem.Status = TaskItemStatus.Pending;
-
+            taskItem.Status = taskItem.HousekeeperId.HasValue ? TaskItemStatus.Assigned : TaskItemStatus.Pending;
+ 
             if (ModelState.IsValid)
             {
                 _context.Add(taskItem);
@@ -104,6 +111,7 @@ namespace Homera.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["LocationId"] = new SelectList(_context.Locations.Where(l => l.ClientId == user.Id), "Id", "DisplayName", taskItem.LocationId);
+            await PopulateHousekeepersDropdown(taskItem.HousekeeperId);
             return View(taskItem);
         }
 
@@ -127,6 +135,7 @@ namespace Homera.Controllers
             }
 
             ViewData["LocationId"] = new SelectList(_context.Locations.Where(l => l.ClientId == user.Id), "Id", "DisplayName", taskItem.LocationId);
+            await PopulateHousekeepersDropdown(taskItem.HousekeeperId);
             return View(taskItem);
         }
 
@@ -136,7 +145,7 @@ namespace Homera.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = UserRole.Client)]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Budget,Deadline,Category,LocationId")] TaskItem taskItem)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Budget,Deadline,Category,LocationId,HousekeeperId")] TaskItem taskItem)
         {
             if (id != taskItem.Id) return NotFound();
 
@@ -153,8 +162,8 @@ namespace Homera.Controllers
             }
 
             taskItem.ClientId = user.Id;
-            taskItem.Status = TaskItemStatus.Pending;
-
+            taskItem.Status = taskItem.HousekeeperId.HasValue ? TaskItemStatus.Assigned : TaskItemStatus.Pending;
+ 
             if (ModelState.IsValid)
             {
                 try
@@ -170,6 +179,7 @@ namespace Homera.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["LocationId"] = new SelectList(_context.Locations.Where(l => l.ClientId == user.Id), "Id", "DisplayName", taskItem.LocationId);
+            await PopulateHousekeepersDropdown(taskItem.HousekeeperId);
             return View(taskItem);
         }
 
@@ -202,7 +212,53 @@ namespace Homera.Controllers
 
             return View(taskItem);
         }
-        
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = UserRole.Housekeeper)]
+        public async Task<IActionResult> SubmitWork(int id, IFormFile fileProof)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            var task = await _context.Tasks.FindAsync(id);
+            if (task == null) return NotFound();
+
+            if (task.HousekeeperId != user.Id) return Forbid();
+            if (task.Status != TaskItemStatus.Assigned)
+            {
+                TempData["Error"] = "Samo naznacheni zadachi mogat da se izprashtat za pregled.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            if (fileProof != null && fileProof.Length > 0)
+            {
+                string uploadsFolder = Path.Combine(_hostEnvironment.WebRootPath, "uploads");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + fileProof.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await fileProof.CopyToAsync(fileStream);
+                }
+
+                task.ImagePath = "/uploads/" + uniqueFileName;
+                task.Status = TaskItemStatus.InReview;
+                task.ReviewDate = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Rabotata e izpratena za pregled!";
+            }
+            else
+            {
+                TempData["Error"] = "Molya prikazhete snimka kato dokazatelstvo.";
+            }
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = UserRole.Client)]
@@ -251,6 +307,15 @@ namespace Homera.Controllers
             _context.Tasks.Remove(taskItem);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        private async Task PopulateHousekeepersDropdown(int? selectedId = null)
+        {
+            var housekeepers = await _userManager.GetUsersInRoleAsync(UserRole.Housekeeper);
+            ViewData["HousekeeperId"] = new SelectList(housekeepers.Select(u => new { 
+                Id = u.Id, 
+                FullName = $"{u.FirstName} {u.LastName}" 
+            }), "Id", "FullName", selectedId);
         }
 
         private bool TaskItemExists(int id)

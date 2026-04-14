@@ -40,6 +40,7 @@ namespace Homera.Data
                     await userManager.AddToRoleAsync(adminUser, UserRole.Administrator);
                 }
             }
+
         }
     }
 }

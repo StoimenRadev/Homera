@@ -1,5 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations.Schema;
 using Homera.Models.Enums;
 
 namespace Homera.Models
@@ -27,6 +29,10 @@ namespace Homera.Models
 
         // Image proof path
         public string? ImagePath { get; set; }
+ 
+        [NotMapped]
+        [Display(Name = "Snimka (Proof)")]
+        public IFormFile? FileProof { get; set; }
 
         // CLIENT (Creator)
         public int ClientId { get; set; }
