@@ -90,6 +90,10 @@
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> @:|
                     <a asp-action="Delete" asp-route-id="@item.Id">Cancel</a> @:|
                 }
+                @if (item.Status == Homera.Models.Enums.TaskItemStatus.Assigned && User.IsInRole(Homera.Models.Enums.UserRole.Housekeeper))
+                {
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Submit Work</a> @:|
+                }
                 <a asp-action="Details" asp-route-id="@item.Id">Details</a>
                 @if (item.Status == Homera.Models.Enums.TaskItemStatus.InReview)
                 {

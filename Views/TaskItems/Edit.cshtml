@@ -38,10 +38,17 @@
                 <select asp-for="Category" class="form-control" asp-items="Html.GetEnumSelectList<Homera.Models.Enums.TaskCategory>()"></select>
                 <span asp-validation-for="Category" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label asp-for="LocationId" class="control-label"></label>
-                <select asp-for="LocationId" class="form-control" asp-items="ViewBag.LocationId"></select>
+                <select asp-for="LocationId" class ="form-control" asp-items="ViewBag.LocationId"></select>
                 <span asp-validation-for="LocationId" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="HousekeeperId" class="control-label">Домакин (опция)</label>
+                <select asp-for="HousekeeperId" class ="form-control" asp-items="ViewBag.HousekeeperId">
+                    <option value="">-- Изберете Домакин --</option>
+                </select>
+                <span asp-validation-for="HousekeeperId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

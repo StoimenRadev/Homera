@@ -56,7 +56,14 @@
             @Html.DisplayNameFor(model => model.ImagePath)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImagePath)
+            @if (!string.IsNullOrEmpty(Model.ImagePath))
+            {
+                <img src="@Model.ImagePath" alt="Proof Image" style="max-width:300px; display:block;" />
+            }
+            else
+            {
+                <span>No proof uploaded</span>
+            }
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Client)
@@ -88,6 +95,22 @@
         <form asp-action="Complete" asp-route-id="@Model?.Id" method="post" style="display:inline;">
             <input type="submit" value="Complete" class="btn btn-sm btn-success" />
         </form> @:|
+    }
+    @if (Model?.Status == Homera.Models.Enums.TaskItemStatus.Assigned && User.IsInRole(Homera.Models.Enums.UserRole.Housekeeper))
+    {
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5>Submit Your Work</h5>
+                <form asp-action="SubmitWork" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Upload Proof Image</label>
+                        <input type="file" name="fileProof" class="form-control" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit for Review</button>
+                </form>
+            </div>
+        </div>
+        <br />
     }
     <a asp-action="Index">Back to List</a>
 </div>
