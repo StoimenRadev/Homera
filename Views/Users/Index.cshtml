@@ -40,7 +40,11 @@
                 @Html.DisplayFor(modelItem => item.UserName)
             </td>
             <td>
-                @* Role managed by ASP.NET Identity *@
+                @{
+                    var userRoles = ViewBag.UserRoles as Dictionary<int, string>;
+                    var roles = userRoles != null && userRoles.ContainsKey(item.Id) ? userRoles[item.Id] : "No roles";
+                }
+                @roles
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

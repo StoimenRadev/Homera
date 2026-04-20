@@ -28,21 +28,33 @@ namespace Homera.Controllers
             _roleManager = roleManager;
         }
 
-        private void PopulateRolesDropdown()
+        private async Task PopulateRolesDropdown(string? selectedRole = null)
         {
-            var roles = new List<string>
+            var roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
+            // Ensure our default roles are present if not found in DB for some reason
+            var defaultRoles = new List<string> { UserRole.Administrator, UserRole.Housekeeper, UserRole.Client };
+            foreach (var dr in defaultRoles)
             {
-                UserRole.Administrator,
-                UserRole.Housekeeper,
-                UserRole.Client
-            };
-            ViewBag.Roles = new SelectList(roles);
+                if (!roles.Contains(dr)) roles.Add(dr);
+            }
+
+            ViewBag.Roles = new SelectList(roles, selectedRole);
         }
 
         // GET: Users
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Users.ToListAsync());
+            var users = await _userManager.Users.ToListAsync();
+            var userRoles = new Dictionary<int, string>();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                userRoles[user.Id] = string.Join(", ", roles);
+            }
+
+            ViewBag.UserRoles = userRoles;
+            return View(users);
         }
 
         // GET: Users/Details/5
@@ -69,9 +81,9 @@ namespace Homera.Controllers
         }
 
         // GET: Users/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            PopulateRolesDropdown();
+            await PopulateRolesDropdown();
             return View();
         }
 
@@ -79,10 +91,12 @@ namespace Homera.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind("Id,FirstName,LastName,UserName")] User user,
+            [Bind("FirstName,LastName,UserName")] User user,
             string role,
             string password)
         {
+            if (ModelState.IsValid)
+            {
                 var result = await _userManager.CreateAsync(user, password);
                 if (result.Succeeded)
                 {
@@ -99,7 +113,8 @@ namespace Homera.Controllers
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
-            PopulateRolesDropdown();
+            }
+            await PopulateRolesDropdown(role);
             return View(user);
         }
 
@@ -108,10 +123,11 @@ namespace Homera.Controllers
         {
             if (id == null) return NotFound();
 
-            var user = await _context.Users.FindAsync(id);
+            var user = await _userManager.FindByIdAsync(id.ToString()!);
             if (user == null) return NotFound();
 
-            PopulateRolesDropdown();
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            await PopulateRolesDropdown(currentRoles.FirstOrDefault());
             return View(user);
         }
 
@@ -127,36 +143,34 @@ namespace Homera.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
+                var existingUser = await _userManager.FindByIdAsync(id.ToString());
+                if (existingUser == null) return NotFound();
 
+                // Update properties
+                existingUser.FirstName = user.FirstName;
+                existingUser.LastName = user.LastName;
+                existingUser.UserName = user.UserName;
+
+                var result = await _userManager.UpdateAsync(existingUser);
+                if (result.Succeeded)
+                {
                     if (!string.IsNullOrEmpty(role))
                     {
-                        if (!await _roleManager.RoleExistsAsync(role))
-                            await _roleManager.CreateAsync(new IdentityRole<int>(role));
-
-                        if (string.IsNullOrEmpty(user.UserName)) return NotFound();
-                        var identityUser = await _userManager.FindByNameAsync(user.UserName); 
-                        if (identityUser != null)
+                        var currentRoles = await _userManager.GetRolesAsync(existingUser);
+                        if (!currentRoles.Contains(role))
                         {
-                            var currentRoles = await _userManager.GetRolesAsync(identityUser);
-                            await _userManager.RemoveFromRolesAsync(identityUser, currentRoles);
-                            await _userManager.AddToRoleAsync(identityUser, role);
+                            await _userManager.RemoveFromRolesAsync(existingUser, currentRoles);
+                            await _userManager.AddToRoleAsync(existingUser, role);
                         }
                     }
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
+                foreach (var error in result.Errors)
                 {
-                    if (!UserExists(user.Id))
-                        return NotFound();
-                    else
-                        throw;
+                    ModelState.AddModelError(string.Empty, error.Description);
                 }
-                return RedirectToAction(nameof(Index));
             }
-            PopulateRolesDropdown();
+            await PopulateRolesDropdown(role);
             return View(user);
         }
 
@@ -186,13 +200,12 @@ namespace Homera.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _userManager.FindByIdAsync(id.ToString());
             if (user != null)
             {
-                _context.Users.Remove(user);
+                await _userManager.DeleteAsync(user);
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
