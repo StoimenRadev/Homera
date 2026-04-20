@@ -66,8 +66,17 @@ namespace Homera.Controllers
 
         // GET: Locations/Create
         [Authorize(Roles = UserRole.Client + "," + UserRole.Administrator)]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            if (await _userManager.IsInRoleAsync(user, UserRole.Administrator))
+            {
+                var clients = await _userManager.GetUsersInRoleAsync(UserRole.Client);
+                ViewData["ClientId"] = new SelectList(clients, "Id", "UserName");
+            }
+
             return View();
         }
 
@@ -77,12 +86,15 @@ namespace Homera.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = UserRole.Client + "," + UserRole.Administrator)]
-        public async Task<IActionResult> Create([Bind("Id,Name,Street,HouseNumber,Neighbourhood,City,PostalCode,Country,Latitude,Longitude")] Location location)
+        public async Task<IActionResult> Create([Bind("Id,Name,Street,HouseNumber,Neighbourhood,City,PostalCode,Country,Latitude,Longitude,ClientId")] Location location)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
-            location.ClientId = user.Id;
+            if (!await _userManager.IsInRoleAsync(user, UserRole.Administrator))
+            {
+                location.ClientId = user.Id;
+            }
 
             if (ModelState.IsValid)
             {
@@ -109,6 +121,12 @@ namespace Homera.Controllers
                 return Forbid();
             }
 
+            if (await _userManager.IsInRoleAsync(user, UserRole.Administrator))
+            {
+                var clients = await _userManager.GetUsersInRoleAsync(UserRole.Client);
+                ViewData["ClientId"] = new SelectList(clients, "Id", "UserName", location.ClientId);
+            }
+
             return View(location);
         }
 
@@ -117,7 +135,7 @@ namespace Homera.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Street,HouseNumber,Neighbourhood,City,PostalCode,Country,Latitude,Longitude")] Location location)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Street,HouseNumber,Neighbourhood,City,PostalCode,Country,Latitude,Longitude,ClientId")] Location location)
         {
             if (id != location.Id) return NotFound();
 
@@ -132,7 +150,10 @@ namespace Homera.Controllers
                 return Forbid();
             }
 
-            location.ClientId = existingLocation.ClientId;
+            if (!await _userManager.IsInRoleAsync(user, UserRole.Administrator))
+            {
+                location.ClientId = existingLocation.ClientId;
+            }
 
             if (ModelState.IsValid)
             {

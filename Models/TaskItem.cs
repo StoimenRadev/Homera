@@ -24,10 +24,10 @@ namespace Homera.Models
 
         public TaskItemStatus Status { get; set; }
 
-        // Date when housekeeper sends it for review
+        [Display(Name = "Дата на изпращане")]
         public DateTime? ReviewDate { get; set; }
 
-        // Image proof path
+        [Display(Name = "Снимка доказателство")]
         public string? ImagePath { get; set; }
  
         [NotMapped]
@@ -38,7 +38,7 @@ namespace Homera.Models
         public int ClientId { get; set; }
         public virtual User? Client { get; set; }
 
-        // HOUSEKEEPER (Assigned)
+        [Display(Name = "Помощник")]
         public int? HousekeeperId { get; set; }
         public virtual User? Housekeeper { get; set; }
 

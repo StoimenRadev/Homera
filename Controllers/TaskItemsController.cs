@@ -79,13 +79,19 @@ namespace Homera.Controllers
         }
 
         // GET: TaskItems/Create
-        [Authorize(Roles = UserRole.Client)]
+        [Authorize(Roles = UserRole.Client + "," + UserRole.Administrator)]
         public async Task<IActionResult> Create(int? locationId)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
-            ViewData["LocationId"] = new SelectList(_context.Locations.Where(l => l.ClientId == user.Id), "Id", "DisplayName", locationId);
+            IQueryable<Location> locations = _context.Locations;
+            if (!await _userManager.IsInRoleAsync(user, UserRole.Administrator))
+            {
+                locations = locations.Where(l => l.ClientId == user.Id);
+            }
+
+            ViewData["LocationId"] = new SelectList(locations, "Id", "DisplayName", locationId);
             await PopulateHousekeepersDropdown();
             return View();
         }
@@ -95,13 +101,21 @@ namespace Homera.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = UserRole.Client)]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Budget,Deadline,Category,LocationId,HousekeeperId")] TaskItem taskItem)
+        [Authorize(Roles = UserRole.Client + "," + UserRole.Administrator)]
+        public async Task<IActionResult> Create([Bind("Id,Name,Description,Budget,Deadline,Category,LocationId,HousekeeperId,ReviewDate,ImagePath")] TaskItem taskItem)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
-            taskItem.ClientId = user.Id;
+            if (await _userManager.IsInRoleAsync(user, UserRole.Administrator))
+            {
+                var location = await _context.Locations.FindAsync(taskItem.LocationId);
+                if (location != null) taskItem.ClientId = location.ClientId;
+            }
+            else
+            {
+                taskItem.ClientId = user.Id;
+            }
             taskItem.Status = taskItem.HousekeeperId.HasValue ? TaskItemStatus.Assigned : TaskItemStatus.Pending;
  
             if (ModelState.IsValid)
@@ -110,31 +124,44 @@ namespace Homera.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["LocationId"] = new SelectList(_context.Locations.Where(l => l.ClientId == user.Id), "Id", "DisplayName", taskItem.LocationId);
+            IQueryable<Location> locations = _context.Locations;
+            if (!await _userManager.IsInRoleAsync(user, UserRole.Administrator))
+            {
+                locations = locations.Where(l => l.ClientId == user.Id);
+            }
+            ViewData["LocationId"] = new SelectList(locations, "Id", "DisplayName", taskItem.LocationId);
             await PopulateHousekeepersDropdown(taskItem.HousekeeperId);
             return View(taskItem);
         }
 
         // GET: TaskItems/Edit/5
-        [Authorize(Roles = UserRole.Client)]
+        [Authorize(Roles = UserRole.Client + "," + UserRole.Administrator)]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
-
+ 
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
-
+ 
             var taskItem = await _context.Tasks.FindAsync(id);
             if (taskItem == null) return NotFound();
+ 
+            bool isAdmin = await _userManager.IsInRoleAsync(user, UserRole.Administrator);
 
-            if (taskItem.ClientId != user.Id) return Forbid();
-            if (taskItem.Status != TaskItemStatus.Pending)
+            if (taskItem.ClientId != user.Id && !isAdmin) return Forbid();
+            if (taskItem.Status != TaskItemStatus.Pending && !isAdmin)
             {
-                TempData["Error"] = "Only pending tasks can be edited.";
+                TempData["Error"] = "Only pending tasks can be edited by clients.";
                 return RedirectToAction(nameof(Index));
             }
+ 
+            IQueryable<Location> locations = _context.Locations;
+            if (!isAdmin)
+            {
+                locations = locations.Where(l => l.ClientId == user.Id);
+            }
 
-            ViewData["LocationId"] = new SelectList(_context.Locations.Where(l => l.ClientId == user.Id), "Id", "DisplayName", taskItem.LocationId);
+            ViewData["LocationId"] = new SelectList(locations, "Id", "DisplayName", taskItem.LocationId);
             await PopulateHousekeepersDropdown(taskItem.HousekeeperId);
             return View(taskItem);
         }
@@ -144,8 +171,8 @@ namespace Homera.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = UserRole.Client)]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Budget,Deadline,Category,LocationId,HousekeeperId")] TaskItem taskItem)
+        [Authorize(Roles = UserRole.Client + "," + UserRole.Administrator)]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Budget,Deadline,Category,LocationId,HousekeeperId,ReviewDate,ImagePath")] TaskItem taskItem)
         {
             if (id != taskItem.Id) return NotFound();
 
@@ -155,13 +182,25 @@ namespace Homera.Controllers
             var existingTask = await _context.Tasks.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
             if (existingTask == null) return NotFound();
 
-            if (existingTask.ClientId != user.Id) return Forbid();
-            if (existingTask.Status != TaskItemStatus.Pending)
+            bool isAdmin = await _userManager.IsInRoleAsync(user, UserRole.Administrator);
+
+            if (existingTask.ClientId != user.Id && !isAdmin) return Forbid();
+            if (existingTask.Status != TaskItemStatus.Pending && !isAdmin)
             {
-                return BadRequest("Only pending tasks can be edited.");
+                return BadRequest("Only pending tasks can be edited by clients.");
+            }
+ 
+            if (isAdmin)
+            {
+                var location = await _context.Locations.FindAsync(taskItem.LocationId);
+                if (location != null) taskItem.ClientId = location.ClientId;
+                else taskItem.ClientId = existingTask.ClientId;
+            }
+            else
+            {
+                taskItem.ClientId = user.Id;
             }
 
-            taskItem.ClientId = user.Id;
             taskItem.Status = taskItem.HousekeeperId.HasValue ? TaskItemStatus.Assigned : TaskItemStatus.Pending;
  
             if (ModelState.IsValid)
@@ -178,7 +217,12 @@ namespace Homera.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["LocationId"] = new SelectList(_context.Locations.Where(l => l.ClientId == user.Id), "Id", "DisplayName", taskItem.LocationId);
+            IQueryable<Location> locations = _context.Locations;
+            if (!await _userManager.IsInRoleAsync(user, UserRole.Administrator))
+            {
+                locations = locations.Where(l => l.ClientId == user.Id);
+            }
+            ViewData["LocationId"] = new SelectList(locations, "Id", "DisplayName", taskItem.LocationId);
             await PopulateHousekeepersDropdown(taskItem.HousekeeperId);
             return View(taskItem);
         }
@@ -225,14 +269,24 @@ namespace Homera.Controllers
             if (task == null) return NotFound();
 
             if (task.HousekeeperId != user.Id) return Forbid();
-            if (task.Status != TaskItemStatus.Assigned)
+            if (task.Status != TaskItemStatus.Assigned && task.Status != TaskItemStatus.InReview)
             {
-                TempData["Error"] = "Samo naznacheni zadachi mogat da se izprashtat za pregled.";
+                TempData["Error"] = "Samo naznacheni ili zadachi v proces na pregled mogat da se izprashtat.";
                 return RedirectToAction(nameof(Details), new { id });
             }
 
             if (fileProof != null && fileProof.Length > 0)
             {
+                // Delete old file if exists
+                if (!string.IsNullOrEmpty(task.ImagePath))
+                {
+                    string oldFilePath = Path.Combine(_hostEnvironment.WebRootPath, task.ImagePath.TrimStart('/'));
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                }
+
                 string uploadsFolder = Path.Combine(_hostEnvironment.WebRootPath, "uploads");
                 if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
@@ -261,7 +315,7 @@ namespace Homera.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = UserRole.Client)]
+        [Authorize(Roles = UserRole.Client + "," + UserRole.Administrator)]
         public async Task<IActionResult> Complete(int id)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -270,7 +324,7 @@ namespace Homera.Controllers
             var task = await _context.Tasks.FindAsync(id);
             if (task == null) return NotFound();
 
-            if (task.ClientId != user.Id) return Forbid();
+            if (task.ClientId != user.Id && !await _userManager.IsInRoleAsync(user, UserRole.Administrator)) return Forbid();
 
             if (task.Status != TaskItemStatus.InReview)
             {
