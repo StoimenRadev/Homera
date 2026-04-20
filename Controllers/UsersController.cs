@@ -10,8 +10,11 @@ using Homera.Data;
 using Homera.Models;
 using Homera.Models.Enums;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace Homera.Controllers
 {
+    [Authorize(Roles = UserRole.Administrator)]
     public class UsersController : Controller
     {
         private readonly ApplicationDbContext _context;
