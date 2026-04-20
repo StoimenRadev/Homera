@@ -73,7 +73,14 @@
                 @Html.DisplayFor(modelItem => item.ReviewDate)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ImagePath)
+                @if (!string.IsNullOrEmpty(item.ImagePath))
+                {
+                    <a href="javascript:void(0)" onclick="showImageModal('@item.ImagePath')">Преглед</a>
+                }
+                else
+                {
+                    <span>-</span>
+                }
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Client!.FirstName)
@@ -85,7 +92,7 @@
                 @Html.DisplayFor(modelItem => item.Location!.DisplayName)
             </td>
             <td>
-                @if (item.Status == Homera.Models.Enums.TaskItemStatus.Pending)
+                @if (item.Status == Homera.Models.Enums.TaskItemStatus.Pending || User.IsInRole(UserRole.Administrator))
                 {
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> @:|
                     <a asp-action="Delete" asp-route-id="@item.Id">Cancel</a> @:|
@@ -95,7 +102,7 @@
                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Submit Work</a> @:|
                 }
                 <a asp-action="Details" asp-route-id="@item.Id">Details</a>
-                @if (item.Status == Homera.Models.Enums.TaskItemStatus.InReview)
+                @if (item.Status == Homera.Models.Enums.TaskItemStatus.InReview && (User.IsInRole(UserRole.Client) || User.IsInRole(UserRole.Administrator)))
                 {
                     @:|
                     <form asp-action="Complete" asp-route-id="@item.Id" method="post" style="display:inline;">
@@ -107,3 +114,28 @@
 }
     </tbody>
 </table>
+
+<!-- Modal for Image Preview -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imagePreviewModalLabel">Преглед на доказателство</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImagePath" src="" class="img-fluid rounded shadow-sm" alt="Proof Image" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showImageModal(imagePath) {
+            document.getElementById('modalImagePath').src = imagePath;
+            var myModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+            myModal.show();
+        }
+    </script>
+}

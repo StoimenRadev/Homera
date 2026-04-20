@@ -58,7 +58,7 @@
         <dd class = "col-sm-10">
             @if (!string.IsNullOrEmpty(Model.ImagePath))
             {
-                <img src="@Model.ImagePath" alt="Proof Image" style="max-width:300px; display:block;" />
+                <img src="@Model.ImagePath" alt="Proof Image" style="max-width:100%; height:auto; display:block;" />
             }
             else
             {
@@ -90,23 +90,25 @@
     {
         <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> @:|
     }
-    @if (Model?.Status == Homera.Models.Enums.TaskItemStatus.InReview)
+    @if (Model?.Status == Homera.Models.Enums.TaskItemStatus.InReview && (User.IsInRole(UserRole.Client) || User.IsInRole(UserRole.Administrator)))
     {
         <form asp-action="Complete" asp-route-id="@Model?.Id" method="post" style="display:inline;">
             <input type="submit" value="Complete" class="btn btn-sm btn-success" />
         </form> @:|
     }
-    @if (Model?.Status == Homera.Models.Enums.TaskItemStatus.Assigned && User.IsInRole(Homera.Models.Enums.UserRole.Housekeeper))
+    @if ((Model?.Status == Homera.Models.Enums.TaskItemStatus.Assigned || Model?.Status == Homera.Models.Enums.TaskItemStatus.InReview) 
+          && User.IsInRole(Homera.Models.Enums.UserRole.Housekeeper))
     {
-        <div class="card mt-4">
+        <div class="card mt-4 border-info shadow-sm">
             <div class="card-body">
-                <h5>Submit Your Work</h5>
+                <h5 class="card-title">@(Model.Status == Homera.Models.Enums.TaskItemStatus.InReview ? "Update Your Work" : "Submit Your Work")</h5>
+                <p class="card-text text-muted small">You can upload a proof image to submit or update your work.</p>
                 <form asp-action="SubmitWork" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
                     <div class="form-group mb-3">
-                        <label class="form-label">Upload Proof Image</label>
-                        <input type="file" name="fileProof" class="form-control" required />
+                        <label class="form-label">@(Model.Status == Homera.Models.Enums.TaskItemStatus.InReview ? "Change Proof Image" : "Upload Proof Image")</label>
+                        <input type="file" name="fileProof" class="form-control shadow-sm" required />
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit for Review</button>
+                    <button type="submit" class="btn btn-info w-100">@(Model.Status == Homera.Models.Enums.TaskItemStatus.InReview ? "Update Submission" : "Submit for Review")</button>
                 </form>
             </div>
         </div>

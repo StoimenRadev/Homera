@@ -1,0 +1,89 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">Admin Dashboard</h1>
+
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Users</h5>
+                    <h2 class="card-text">@ViewBag.TotalUsers</h2>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" asp-controller="Users" asp-action="Index">View Details</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Locations</h5>
+                    <h2 class="card-text">@ViewBag.TotalLocations</h2>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" asp-controller="Locations" asp-action="Index">View Details</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Tasks</h5>
+                    <h2 class="card-text">@ViewBag.TotalTasks</h2>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" asp-controller="TaskItems" asp-action="Index">View Details</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Reviews</h5>
+                    <h2 class="card-text">@ViewBag.PendingReviews</h2>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-dark stretched-link" asp-controller="TaskItems" asp-action="Index">View Tasks</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Users by Role</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        @foreach (var role in ViewBag.UsersByRole)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                @role.Key
+                                <span class="badge bg-secondary rounded-pill">@role.Value</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-controller="Users" asp-action="Create" class="btn btn-outline-primary">Create New User</a>
+                        <a asp-controller="Locations" asp-action="Create" class="btn btn-outline-success">Create New Location</a>
+                        <a asp-controller="TaskItems" asp-action="Index" class="btn btn-outline-info">Manage Tasks</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
