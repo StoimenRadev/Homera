@@ -1,78 +1,103 @@
 @model Homera.Models.Location
+@using Homera.Models.Enums
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Location";
 }
 
-<h1>Edit</h1>
-
-<h4>Location</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <input type="hidden" asp-for="Latitude" id="Latitude" />
-            <input type="hidden" asp-for="Longitude" id="Longitude" />
-
-            @if (User.IsInRole(UserRole.Administrator))
-            {
-                <div class="form-group mb-2">
-                    <label asp-for="ClientId" class="control-label">Client</label>
-                    <select asp-for="ClientId" class="form-control" asp-items="ViewBag.ClientId"></select>
-                    <span asp-validation-for="ClientId" class="text-danger"></span>
+<div class="row justify-content-center">
+    <div class="col-xl-10">
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-5">
+            <div class="card-header bg-primary text-white p-4">
+                <div class="d-flex align-items-center">
+                    <div class="bg-white text-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <span style="font-size: 1.5rem;">🏠</span>
+                    </div>
+                    <div>
+                        <h1 class="h3 fw-bold mb-0">Edit Location</h1>
+                        <p class="mb-0 opacity-75 small">Update the details for "@Model.Name"</p>
+                    </div>
                 </div>
-            }
-            
-            <div class="form-group mb-2">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group mb-2">
-                <label asp-for="Street" class="control-label"></label>
-                <input asp-for="Street" class="form-control" />
-                <span asp-validation-for="Street" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-2">
-                <label asp-for="HouseNumber" class="control-label"></label>
-                <input asp-for="HouseNumber" class="form-control" />
-                <span asp-validation-for="HouseNumber" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-2">
-                <label asp-for="Neighbourhood" class="control-label"></label>
-                <input asp-for="Neighbourhood" class="form-control" />
-                <span asp-validation-for="Neighbourhood" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-2">
-                <label asp-for="City" class="control-label"></label>
-                <input asp-for="City" class="form-control" />
-                <span asp-validation-for="City" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-2">
-                <label asp-for="PostalCode" class="control-label"></label>
-                <input asp-for="PostalCode" class="form-control" />
-                <span asp-validation-for="PostalCode" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="Country" class="control-label"></label>
-                <input asp-for="Country" class="form-control" />
-                <span asp-validation-for="Country" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary w-100" />
-            </div>
-        </form>
-    </div>
-    <div class="col-md-8">
-        <label class="form-label">Pick on Map / Search Address:</label>
-        <div id="map" style="height: 500px; border-radius: 8px; border: 1px solid #ddd;"></div>
-    </div>
-</div>
+            <div class="card-body p-0">
+                <div class="row g-0">
+                    <div class="col-lg-5 p-4 p-md-5 border-end">
+                        <form asp-action="Edit" id="locationForm">
+                            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3" role="alert"></div>
+                            <input type="hidden" asp-for="Id" />
+                            <input type="hidden" asp-for="Latitude" id="Latitude" />
+                            <input type="hidden" asp-for="Longitude" id="Longitude" />
 
-<div>
-    <a asp-action="Index">Back to List</a>
+                            @if (User.IsInRole(UserRole.Administrator))
+                            {
+                                <div class="mb-3">
+                                    <label asp-for="ClientId" class="form-label small fw-bold">Assign to Client</label>
+                                    <select asp-for="ClientId" class="form-select shadow-sm" asp-items="ViewBag.ClientId"></select>
+                                    <span asp-validation-for="ClientId" class="text-danger small"></span>
+                                </div>
+                            }
+                            
+                            <div class="mb-3">
+                                <label asp-for="Name" class="form-label small fw-bold">Location Name</label>
+                                <input asp-for="Name" class="form-control" placeholder="e.g. My Home" />
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label asp-for="Street" class="form-label small fw-bold">Street</label>
+                                    <input asp-for="Street" class="form-control" placeholder="Street name" />
+                                    <span asp-validation-for="Street" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label asp-for="HouseNumber" class="form-label small fw-bold">№</label>
+                                    <input asp-for="HouseNumber" class="form-control" placeholder="12A" />
+                                    <span asp-validation-for="HouseNumber" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Neighbourhood" class="form-label small fw-bold">Neighbourhood</label>
+                                <input asp-for="Neighbourhood" class="form-control" placeholder="District or quarter" />
+                                <span asp-validation-for="Neighbourhood" class="text-danger small"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label asp-for="City" class="form-label small fw-bold">City</label>
+                                    <input asp-for="City" class="form-control" placeholder="City" />
+                                    <span asp-validation-for="City" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label asp-for="PostalCode" class="form-label small fw-bold">Code</label>
+                                    <input asp-for="PostalCode" class="form-control" placeholder="8000" />
+                                    <span asp-validation-for="PostalCode" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="Country" class="form-label small fw-bold">Country</label>
+                                <input asp-for="Country" class="form-control" placeholder="Country" />
+                                <span asp-validation-for="Country" class="text-danger small"></span>
+                            </div>
+
+                            <div class="d-grid gap-3 pt-2">
+                                <button type="submit" class="btn btn-primary btn-lg shadow-sm">Save Changes</button>
+                                <a asp-action="Index" class="btn btn-light text-muted">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-lg-7 bg-light d-flex flex-column">
+                        <div class="p-4 bg-white border-bottom">
+                            <h2 class="h6 fw-bold mb-1">Update Map Position</h2>
+                            <p class="text-muted small mb-0">Drag the pin to adjust the precise location.</p>
+                        </div>
+                        <div id="map" class="flex-grow-1" style="min-height: 500px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
@@ -97,7 +122,8 @@
 
             // Geocoder (Search Bar)
             var geocoder = L.Control.geocoder({
-                defaultMarkGeocode: false
+                defaultMarkGeocode: false,
+                placeholder: "Search for address..."
             })
             .on('markgeocode', function(e) {
                 var bbox = e.geocode.bbox;

@@ -1,79 +1,103 @@
 @model Homera.Models.TaskItem
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create New Task";
 }
 
-<h1>Create</h1>
-
-<h4>TaskItem</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <div class="mb-3">
-            <label class="form-label d-block">Quick Templates:</label>
-            <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="fillTemplate('Weekly Cleaning', 'Standard weekly home cleaning including floors and dusting.', 0, 50.00)">🧹 Cleaning</button>
-            <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="fillTemplate('Water Flowers', 'Water all indoor and outdoor plants.', 1, 20.00)">🌻 Pets & Plants</button>
-            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="fillTemplate('Elderly Care', 'Assistance with mobility, meals, and companionship for an elderly person.', 3, 100.00)">👵 Elderly Care</button>
-        </div>
-
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Budget" class="control-label"></label>
-                <input asp-for="Budget" class="form-control" type="number" step="0.01" />
-                <span asp-validation-for="Budget" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Deadline" class="control-label"></label>
-                <input asp-for="Deadline" class="form-control" type="datetime-local" />
-                <span asp-validation-for="Deadline" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Category" class="control-label"></label>
-                <select asp-for="Category" class="form-control" asp-items="Html.GetEnumSelectList<Homera.Models.Enums.TaskCategory>()"></select>
-                <span asp-validation-for="Category" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="LocationId" class="control-label"></label>
-                <div class="input-group">
-                    <select asp-for="LocationId" class ="form-control" asp-items="ViewBag.LocationId">
-                        <option value="">-- Select Location --</option>
-                    </select>
-                    <a asp-controller="Locations" asp-action="Create" class="btn btn-outline-primary" title="Add New Location">+</a>
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-5 mt-4">
+            <div class="card-header bg-primary text-white p-4">
+                <div class="d-flex align-items-center">
+                    <div class="bg-white text-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <span style="font-size: 1.5rem;">📝</span>
+                    </div>
+                    <div>
+                        <h1 class="h3 fw-bold mb-0">Create New Task</h1>
+                        <p class="mb-0 opacity-75 small">Define what you need help with</p>
+                    </div>
                 </div>
-                <span asp-validation-for="LocationId" class="text-danger"></span>
-                @if (((SelectList)ViewBag.LocationId).Count() == 0)
-                {
-                    <small class="text-warning">You haven't added any locations yet. <a asp-controller="Locations" asp-action="Create">Create one now</a> to start adding tasks.</small>
-                }
             </div>
-            <div class="form-group mb-3">
-                <label asp-for="HousekeeperId" class="control-label">Помощник (опция)</label>
-                <select asp-for="HousekeeperId" class ="form-control" asp-items="ViewBag.HousekeeperId">
-                    <option value="">-- Изберете Помощник --</option>
-                </select>
-                <span asp-validation-for="HousekeeperId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
+            <div class="card-body p-4 p-md-5">
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-muted text-uppercase tracking-wider mb-2">Quick Templates:</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="fillTemplate('Weekly Cleaning', 'Standard weekly home cleaning including floors and dusting.', 0, 50.00)">🧹 Cleaning</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="fillTemplate('Water Flowers', 'Water all indoor and outdoor plants.', 1, 20.00)">🌻 Pets & Plants</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="fillTemplate('Elderly Care', 'Assistance with mobility, meals, and companionship for an elderly person.', 3, 100.00)">👵 Elderly Care</button>
+                    </div>
+                </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label small fw-bold">Task Name</label>
+                        <input asp-for="Name" class="form-control form-control-lg" placeholder="What needs to be done?" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label small fw-bold">Detailed Description</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Add specific instructions, requirements, or notes..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Budget" class="form-label small fw-bold">Estimated Budget (лв.)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">лв.</span>
+                                <input asp-for="Budget" class="form-control border-start-0" type="number" step="0.01" placeholder="0.00" />
+                            </div>
+                            <span asp-validation-for="Budget" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Deadline" class="form-label small fw-bold">Required By</label>
+                            <input asp-for="Deadline" class="form-control" type="datetime-local" />
+                            <span asp-validation-for="Deadline" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Category" class="form-label small fw-bold">Category</label>
+                        <select asp-for="Category" class="form-select" asp-items="Html.GetEnumSelectList<Homera.Models.Enums.TaskCategory>()"></select>
+                        <span asp-validation-for="Category" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="LocationId" class="form-label small fw-bold">Service Location</label>
+                        <div class="input-group">
+                            <select asp-for="LocationId" class="form-select" asp-items="ViewBag.LocationId">
+                                <option value="">-- Select Location --</option>
+                            </select>
+                            <a asp-controller="Locations" asp-action="Create" class="btn btn-outline-primary" title="Add New Location">+ Add</a>
+                        </div>
+                        <span asp-validation-for="LocationId" class="text-danger small"></span>
+                        @if (((SelectList)ViewBag.LocationId).Count() == 0)
+                        {
+                            <div class="alert alert-soft-warning p-2 mt-2 small border-0">
+                                ⚠️ You haven't added any locations yet. <a asp-controller="Locations" asp-action="Create" class="alert-link">Create one now</a> to start adding tasks.
+                            </div>
+                        }
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="HousekeeperId" class="form-label small fw-bold">Preferred Помощник (Optional)</label>
+                        <select asp-for="HousekeeperId" class="form-select" asp-items="ViewBag.HousekeeperId">
+                            <option value="">-- Изберете Помощник --</option>
+                        </select>
+                        <span asp-validation-for="HousekeeperId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-grid gap-3 pt-2">
+                        <button type="submit" class="btn btn-primary btn-lg shadow-sm py-3">Publish Task Request</button>
+                        <a asp-action="Index" class="btn btn-light text-muted">Cancel and Back</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
@@ -90,6 +114,16 @@
             now.setDate(now.getDate() + 2);
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
             document.querySelector('[name="Deadline"]').value = now.toISOString().slice(0, 16);
+            
+            // Add a subtle highlight effect to the inputs
+            const inputs = ['Name', 'Description', 'Category', 'Budget', 'Deadline'];
+            inputs.forEach(id => {
+                const el = document.querySelector(`[name="${id}"]`);
+                if (el) {
+                    el.classList.add('is-valid');
+                    setTimeout(() => el.classList.remove('is-valid'), 2000);
+                }
+            });
         }
     </script>
 }

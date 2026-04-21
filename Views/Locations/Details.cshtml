@@ -1,75 +1,85 @@
 @model Homera.Models.Location
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Location Details";
 }
 
-<h1>Details</h1>
+<div class="row justify-content-center">
+    <div class="col-xl-9">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+            <div class="card-header bg-white border-bottom p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary-light text-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                            <span style="font-size: 1.5rem;">🏘️</span>
+                        </div>
+                        <div>
+                            <h1 class="h3 fw-bold mb-0">@Model.Name</h1>
+                            <p class="text-muted mb-0 small">@Model.Neighbourhood, @Model.City</p>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-sm px-3">Edit</a>
+                        <a asp-action="Index" class="btn btn-light btn-sm px-3">Back</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="row g-0">
+                    <div class="col-lg-6 p-4 p-md-5">
+                        <h2 class="h6 fw-bold text-uppercase tracking-wider text-muted mb-4">Address Information</h2>
+                        
+                        <div class="mb-4">
+                            <label class="text-muted smaller d-block mb-1">Street Address</label>
+                            <p class="fw-bold mb-0 text-dark">@Model.Street @Model.HouseNumber</p>
+                        </div>
 
-<div>
-    <h4>Location</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Street)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Street)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.HouseNumber)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.HouseNumber)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Neighbourhood)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Neighbourhood)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.City)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.City)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PostalCode)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PostalCode)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Country)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Country)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Client)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Client!.FirstName)
-        </dd>
-    </dl>
-    <div class="row">
-        <div class="col-12">
-            <label class="form-label">Location on Map:</label>
-            <div id="map" style="height: 400px; border-radius: 8px; border: 1px solid #ddd;"></div>
+                        <div class="row mb-4">
+                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                <label class="text-muted smaller d-block mb-1">Neighbourhood</label>
+                                <p class="fw-bold mb-0">@Model.Neighbourhood</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted smaller d-block mb-1">City</label>
+                                <p class="fw-bold mb-0">@Model.City</p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                <label class="text-muted smaller d-block mb-1">Postal Code</label>
+                                <p class="fw-bold mb-0">@Model.PostalCode</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted smaller d-block mb-1">Country</label>
+                                <p class="fw-bold mb-0">@Model.Country</p>
+                            </div>
+                        </div>
+
+                        @if (User.IsInRole("Administrator") && Model.Client != null)
+                        {
+                            <div class="mt-4 pt-4 border-top">
+                                <label class="text-muted smaller d-block mb-1">Owner Account</label>
+                                <div class="d-flex align-items-center mt-2">
+                                    <div class="bg-light rounded-circle p-1 me-2" style="width: 32px; height: 32px; text-align: center;">👤</div>
+                                    <span class="fw-bold">@Model.Client.FirstName @Model.Client.LastName</span>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="mt-5">
+                            <a asp-controller="TaskItems" asp-action="Create" asp-route-locationId="@Model.Id" class="btn btn-primary w-100 py-3 shadow-sm">
+                                <span class="me-1">✨</span> Create Task at this Location
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 bg-light">
+                        <div id="map" style="height: 100%; min-height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary">Edit</a> |
-    <a asp-controller="TaskItems" asp-action="Create" asp-route-locationId="@Model?.Id" class="btn btn-success">Create Task here</a> |
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
@@ -82,11 +92,10 @@
             var lon = @(string.IsNullOrEmpty(Model?.Longitude) ? "27.4626" : Model.Longitude);
 
             var map = L.map('map', {
-                dragging: false,
-                tap: false,
-                zoomControl: false,
+                dragging: true,
+                zoomControl: true,
                 scrollWheelZoom: false
-            }).setView([lat, lon], 15);
+            }).setView([lat, lon], 16);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'

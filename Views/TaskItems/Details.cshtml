@@ -1,118 +1,136 @@
 @model Homera.Models.TaskItem
+@using Homera.Models.Enums
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Task Details";
 }
 
-<h1>Details</h1>
-
-<div>
-    <h4>TaskItem</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Budget)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Budget)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Deadline)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Deadline)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Category)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Category)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ReviewDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ReviewDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImagePath)
-        </dt>
-        <dd class = "col-sm-10">
-            @if (!string.IsNullOrEmpty(Model.ImagePath))
-            {
-                <img src="@Model.ImagePath" alt="Proof Image" style="max-width:100%; height:auto; display:block;" />
-            }
-            else
-            {
-                <span>No proof uploaded</span>
-            }
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Client)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Client!.FirstName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Housekeeper)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Housekeeper!.FirstName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Location)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Location!.DisplayName)
-        </dd>
-    </dl>
-</div>
-<div>
-    @if (Model?.Status == Homera.Models.Enums.TaskItemStatus.Pending)
-    {
-        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> @:|
-    }
-    @if (Model?.Status == Homera.Models.Enums.TaskItemStatus.InReview && (User.IsInRole(UserRole.Client) || User.IsInRole(UserRole.Administrator)))
-    {
-        <form asp-action="Complete" asp-route-id="@Model?.Id" method="post" style="display:inline;">
-            <input type="submit" value="Complete" class="btn btn-sm btn-success" />
-        </form> @:|
-    }
-    @if ((Model?.Status == Homera.Models.Enums.TaskItemStatus.Assigned || Model?.Status == Homera.Models.Enums.TaskItemStatus.InReview) 
-          && User.IsInRole(Homera.Models.Enums.UserRole.Housekeeper))
-    {
-        <div class="card mt-4 border-info shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">@(Model.Status == Homera.Models.Enums.TaskItemStatus.InReview ? "Update Your Work" : "Submit Your Work")</h5>
-                <p class="card-text text-muted small">You can upload a proof image to submit or update your work.</p>
-                <form asp-action="SubmitWork" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
-                    <div class="form-group mb-3">
-                        <label class="form-label">@(Model.Status == Homera.Models.Enums.TaskItemStatus.InReview ? "Change Proof Image" : "Upload Proof Image")</label>
-                        <input type="file" name="fileProof" class="form-control shadow-sm" required />
+<div class="row justify-content-center">
+    <div class="col-lg-9 col-xl-8">
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-5">
+            <div class="card-header bg-primary text-white p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white text-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                            <span style="font-size: 1.5rem;">🔍</span>
+                        </div>
+                        <div>
+                            <h1 class="h3 fw-bold mb-0">Task Details</h1>
+                            <p class="mb-0 opacity-75 small">Viewing request #@Model.Id</p>
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-info w-100">@(Model.Status == Homera.Models.Enums.TaskItemStatus.InReview ? "Update Submission" : "Submit for Review")</button>
-                </form>
+                    <span class="badge rounded-pill bg-white text-primary px-3 py-2 fw-bold">@Model.Status</span>
+                </div>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <div class="row mb-5">
+                    <div class="col-md-8">
+                        <h2 class="h4 fw-bold mb-3">@Model.Name</h2>
+                        <p class="text-muted mb-4 lead">@Model.Description</p>
+                        
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded-3">
+                                    <label class="text-muted smaller d-block mb-1">Category</label>
+                                    <span class="fw-bold fs-6">@Model.Category</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded-3">
+                                    <label class="text-muted smaller d-block mb-1">Budget</label>
+                                    <span class="fw-bold fs-6 text-primary">@Model.Budget лв.</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded-3">
+                                    <label class="text-muted smaller d-block mb-1">Deadline</label>
+                                    <span class="fw-bold fs-6">@Model.Deadline.ToString("MMM dd, yyyy HH:mm")</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded-3">
+                                    <label class="text-muted smaller d-block mb-1">Location</label>
+                                    <span class="fw-bold fs-6">@Model.Location?.DisplayName</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 border-start ps-md-4">
+                        <h3 class="h6 fw-bold text-uppercase tracking-wider text-muted mb-3">Participants</h3>
+                        
+                        <div class="mb-4">
+                            <label class="text-muted smaller d-block mb-1">Client</label>
+                            <div class="d-flex align-items-center mt-1">
+                                <div class="bg-primary-light text-primary rounded-circle p-1 me-2" style="width: 32px; height: 32px; text-align: center; font-size: 0.8rem;">👤</div>
+                                <span class="fw-bold">@Model.Client?.FirstName @Model.Client?.LastName</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="text-muted smaller d-block mb-1">Assigned Помощник</label>
+                            <div class="d-flex align-items-center mt-1">
+                                @if (Model.Housekeeper != null)
+                                {
+                                    <div class="bg-success-light text-success rounded-circle p-1 me-2" style="width: 32px; height: 32px; text-align: center; font-size: 0.8rem;">🏠</div>
+                                    <span class="fw-bold">@Model.Housekeeper.FirstName @Model.Housekeeper.LastName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted italic small">Waiting for assignment...</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.ImagePath))
+                {
+                    <div class="mb-5">
+                        <h3 class="h6 fw-bold text-uppercase tracking-wider text-muted mb-3">Proof of Work</h3>
+                        <div class="rounded-4 overflow-hidden shadow-sm border">
+                            <img src="@Model.ImagePath" alt="Proof Image" class="img-fluid w-100" />
+                        </div>
+                    </div>
+                }
+
+                <div class="d-flex flex-wrap gap-2 pt-4 border-top">
+                    @if (Model.Status == TaskItemStatus.Pending)
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4">Edit Task</a>
+                    }
+                    
+                    @if (Model.Status == TaskItemStatus.InReview && (User.IsInRole(UserRole.Client.ToString()) || User.IsInRole(UserRole.Administrator.ToString())))
+                    {
+                        <form asp-action="Complete" asp-route-id="@Model.Id" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-success px-4">Approve & Complete</button>
+                        </form>
+                    }
+                    
+                    <a asp-action="Index" class="btn btn-light px-4">Back to Dashboard</a>
+                </div>
+
+                @if ((Model.Status == TaskItemStatus.Assigned || Model.Status == TaskItemStatus.InReview) 
+                    && User.IsInRole(UserRole.Housekeeper.ToString()))
+                {
+                    <div class="card mt-5 border-0 bg-light rounded-4">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-2">@(Model.Status == TaskItemStatus.InReview ? "Update Your Work" : "Submit Your Work")</h5>
+                            <p class="text-muted small mb-4">You can upload a proof image to submit or update your work for the client's review.</p>
+                            
+                            <form asp-action="SubmitWork" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">@(Model.Status == TaskItemStatus.InReview ? "Change Proof Image" : "Upload Proof Image")</label>
+                                    <input type="file" name="fileProof" class="form-control" required />
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 py-2">
+                                    @(Model.Status == TaskItemStatus.InReview ? "Update Submission" : "Submit Task for Review")
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
-        <br />
-    }
-    <a asp-action="Index">Back to List</a>
+    </div>
 </div>

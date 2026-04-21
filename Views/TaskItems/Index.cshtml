@@ -1,134 +1,144 @@
 @model IEnumerable<Homera.Models.TaskItem>
+@using Homera.Models.Enums
 
 @{
-    ViewData["Title"] = "Index";
+    string dashboardTitle = "Dashboard";
+    if (User.IsInRole(UserRole.Administrator.ToString())) dashboardTitle = "Admin Console";
+    else if (User.IsInRole(UserRole.Housekeeper.ToString())) dashboardTitle = "My Work Schedule";
+    else dashboardTitle = "My Activity";
+
+    ViewData["Title"] = dashboardTitle;
 }
 
-<h1>Index</h1>
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h1 class="h2 fw-bold text-dark">@dashboardTitle</h1>
+        <p class="text-muted mb-0">Track and manage your household care services</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        @if (User.IsInRole(UserRole.Client.ToString()) || User.IsInRole(UserRole.Administrator.ToString()))
+        {
+            <a asp-action="Create" class="btn btn-primary btn-lg shadow-sm px-4 rounded-pill">
+                <span class="me-2">✨</span> New Booking
+            </a>
+        }
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Budget)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Deadline)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Category)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ReviewDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ImagePath)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Client)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Housekeeper)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Location)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Budget)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Deadline)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Category)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ReviewDate)
-            </td>
-            <td>
-                @if (!string.IsNullOrEmpty(item.ImagePath))
-                {
-                    <a href="javascript:void(0)" onclick="showImageModal('@item.ImagePath')">Преглед</a>
-                }
-                else
-                {
-                    <span>-</span>
-                }
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Client!.FirstName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Housekeeper!.FirstName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Location!.DisplayName)
-            </td>
-            <td>
-                @if (item.Status == Homera.Models.Enums.TaskItemStatus.Pending || User.IsInRole(UserRole.Administrator))
-                {
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> @:|
-                    <a asp-action="Delete" asp-route-id="@item.Id">Cancel</a> @:|
-                }
-                @if (item.Status == Homera.Models.Enums.TaskItemStatus.Assigned && User.IsInRole(Homera.Models.Enums.UserRole.Housekeeper))
-                {
-                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Submit Work</a> @:|
-                }
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a>
-                @if (item.Status == Homera.Models.Enums.TaskItemStatus.InReview && (User.IsInRole(UserRole.Client) || User.IsInRole(UserRole.Administrator)))
-                {
-                    @:|
-                    <form asp-action="Complete" asp-route-id="@item.Id" method="post" style="display:inline;">
-                        <input type="submit" value="Complete" class="btn btn-sm btn-success" />
-                    </form>
-                }
-            </td>
-        </tr>
+@if (!Model.Any())
+{
+    <div class="card border-0 shadow-sm rounded-4 text-center py-5 mt-4">
+        <div class="card-body p-5">
+            <div class="bg-light d-inline-block rounded-circle p-4 mb-4">
+                <span style="font-size: 3rem;">📭</span>
+            </div>
+            <h3 class="h4 fw-bold">No tasks currently active</h3>
+            <p class="text-muted mx-auto" style="max-width: 400px;">When you book care services or get assigned to tasks, they will appear here for you to track.</p>
+            @if (User.IsInRole(UserRole.Client.ToString()))
+            {
+                <a asp-action="Create" class="btn btn-outline-primary btn-lg mt-3 px-5 rounded-pill">Book your first service</a>
+            }
+        </div>
+    </div>
 }
-    </tbody>
-</table>
+else
+{
+    <div class="row g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100 border-0 shadow-hover rounded-4 overflow-hidden">
+                    @{
+                        string statusBg = item.Status switch {
+                            TaskItemStatus.Pending => "bg-warning-light text-warning",
+                            TaskItemStatus.Assigned => "bg-info-light text-info",
+                            TaskItemStatus.InReview => "bg-primary-light text-primary",
+                            TaskItemStatus.Completed => "bg-success-light text-success",
+                            _ => "bg-light text-dark"
+                        };
+                    }
+                    <div class="card-header border-0 @statusBg py-3 px-4 d-flex justify-content-between align-items-center">
+                        <span class="fw-bold small text-uppercase tracking-wider">@item.Status</span>
+                        <span class="small opacity-75">#@item.Id</span>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title fw-bold mb-0 text-dark">@item.Name</h5>
+                            <span class="text-primary fw-bold">@item.Budget лв.</span>
+                        </div>
+                        <p class="text-muted small mb-4">@item.Category</p>
 
-<!-- Modal for Image Preview -->
-<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+                        <div class="mt-auto">
+                            <div class="d-flex align-items-center mb-2 small">
+                                <span class="me-2">📍</span>
+                                <span class="text-truncate">@item.Location?.DisplayName</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3 small">
+                                <span class="me-2">📅</span>
+                                <span>Deadline: <strong>@item.Deadline.ToString("MMM dd, yyyy")</strong></span>
+                            </div>
+
+                            @if (User.IsInRole(UserRole.Administrator.ToString()) || User.IsInRole(UserRole.Housekeeper.ToString()))
+                            {
+                                <div class="p-2 bg-light rounded-3 mb-3 d-flex align-items-center">
+                                    <div class="bg-white rounded-circle p-1 me-2 shadow-sm" style="font-size: 0.7rem;">👤</div>
+                                    <span class="small text-muted">Client: <strong>@item.Client?.FirstName</strong></span>
+                                </div>
+                            }
+
+                            <div class="d-flex gap-2">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary flex-grow-1 py-2">Details</a>
+                                
+                                <div class="btn-group">
+                                    @if (item.Status == TaskItemStatus.Pending || User.IsInRole(UserRole.Administrator.ToString()))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-light border px-3" title="Edit">✏️</a>
+                                    }
+                                    
+                                    @if (item.Status == TaskItemStatus.InReview && (User.IsInRole(UserRole.Client.ToString()) || User.IsInRole(UserRole.Administrator.ToString())))
+                                    {
+                                        <form asp-action="Complete" asp-route-id="@item.Id" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-success px-3">Complete</button>
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- Image Preview Modal Preservation -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="imagePreviewModalLabel">Преглед на доказателство</h5>
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-0 bg-white p-4 pb-0">
+                <h5 class="modal-title fw-bold">Proof of Completion</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body text-center">
-                <img id="modalImagePath" src="" class="img-fluid rounded shadow-sm" alt="Proof Image" />
+            <div class="modal-body text-center p-4">
+                <img id="modalImagePath" src="" class="img-fluid rounded-4 shadow-sm" alt="Proof" />
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .shadow-hover {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .shadow-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.1) !important;
+    }
+    .bg-warning-light { background-color: #fff9e6; }
+    .bg-info-light { background-color: #e6f7ff; }
+    .bg-primary-light { background-color: #e6fdf6; }
+    .bg-success-light { background-color: #e6fffa; }
+</style>
 
 @section Scripts {
     <script>
@@ -139,3 +149,4 @@
         }
     </script>
 }
+

@@ -2,88 +2,126 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<div class="container mt-4">
-    <h1 class="mb-4">Admin Dashboard</h1>
+<div class="row align-items-center mb-5">
+    <div class="col-md-8">
+        <h1 class="h2 fw-bold text-dark">System Governance</h1>
+        <p class="text-muted mb-0">Platform overview and administrative controls</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <div class="bg-primary-light text-primary small fw-bold px-3 py-2 rounded-pill d-inline-block">
+            🛡️ System Administrator Console
+        </div>
+    </div>
+</div>
 
-    <div class="row">
-        <div class="col-md-3 mb-4">
-            <div class="card bg-primary text-white h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Total Users</h5>
-                    <h2 class="card-text">@ViewBag.TotalUsers</h2>
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden h-100">
+            <div class="card-body p-4 bg-gradient-brand text-white">
+                <p class="small text-uppercase tracking-wider opacity-75 mb-1">Total Users</p>
+                <div class="d-flex justify-content-between align-items-end">
+                    <h2 class="display-5 fw-bold mb-0">@ViewBag.TotalUsers</h2>
+                    <div class="bg-white bg-opacity-25 rounded-circle p-2" style="font-size: 1.5rem;">👤</div>
                 </div>
-                <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a class="small text-white stretched-link" asp-controller="Users" asp-action="Index">View Details</a>
-                </div>
+                <a asp-controller="Users" asp-action="Index" class="stretched-link"></a>
             </div>
         </div>
-        <div class="col-md-3 mb-4">
-            <div class="card bg-success text-white h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Total Locations</h5>
-                    <h2 class="card-text">@ViewBag.TotalLocations</h2>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden h-100">
+            <div class="card-body p-4 bg-primary text-white">
+                <p class="small text-uppercase tracking-wider opacity-75 mb-1">Active Locations</p>
+                <div class="d-flex justify-content-between align-items-end">
+                    <h2 class="display-5 fw-bold mb-0">@ViewBag.TotalLocations</h2>
+                    <div class="bg-white bg-opacity-25 rounded-circle p-2" style="font-size: 1.5rem;">📍</div>
                 </div>
-                <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a class="small text-white stretched-link" asp-controller="Locations" asp-action="Index">View Details</a>
-                </div>
+                <a asp-controller="Locations" asp-action="Index" class="stretched-link"></a>
             </div>
         </div>
-        <div class="col-md-3 mb-4">
-            <div class="card bg-info text-white h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Total Tasks</h5>
-                    <h2 class="card-text">@ViewBag.TotalTasks</h2>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden h-100">
+            <div class="card-body p-4 bg-info text-white">
+                <p class="small text-uppercase tracking-wider opacity-75 mb-1">Total Tasks</p>
+                <div class="d-flex justify-content-between align-items-end">
+                    <h2 class="display-5 fw-bold mb-0">@ViewBag.TotalTasks</h2>
+                    <div class="bg-white bg-opacity-25 rounded-circle p-2" style="font-size: 1.5rem;">📋</div>
                 </div>
-                <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a class="small text-white stretched-link" asp-controller="TaskItems" asp-action="Index">View Details</a>
-                </div>
+                <a asp-controller="TaskItems" asp-action="Index" class="stretched-link"></a>
             </div>
         </div>
-        <div class="col-md-3 mb-4">
-            <div class="card bg-warning text-dark h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Pending Reviews</h5>
-                    <h2 class="card-text">@ViewBag.PendingReviews</h2>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden h-100">
+            <div class="card-body p-4 bg-warning text-dark">
+                <p class="small text-uppercase tracking-wider opacity-75 mb-1">Pending Reviews</p>
+                <div class="d-flex justify-content-between align-items-end">
+                    <h2 class="display-5 fw-bold mb-0">@ViewBag.PendingReviews</h2>
+                    <div class="bg-white bg-opacity-50 rounded-circle p-2" style="font-size: 1.5rem;">⏳</div>
                 </div>
-                <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a class="small text-dark stretched-link" asp-controller="TaskItems" asp-action="Index">View Tasks</a>
+                <a asp-controller="TaskItems" asp-action="Index" class="stretched-link"></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 p-4">
+                <h3 class="h5 fw-bold mb-0 text-dark">User Demographics</h3>
+            </div>
+            <div class="card-body p-4 pt-0">
+                <div class="list-group list-group-flush">
+                    @foreach (var role in ViewBag.UsersByRole)
+                    {
+                        <div class="list-group-item px-0 py-3 border-light d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <span class="me-3 p-2 bg-light rounded-circle">👤</span>
+                                <span class="fw-bold">@role.Key</span>
+                            </div>
+                            <span class="badge bg-primary-light text-primary rounded-pill px-3 py-2 fw-bold">@role.Value Users</span>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Users by Role</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        @foreach (var role in ViewBag.UsersByRole)
-                        {
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                @role.Key
-                                <span class="badge bg-secondary rounded-pill">@role.Value</span>
-                            </li>
-                        }
-                    </ul>
-                </div>
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 p-4">
+                <h3 class="h5 fw-bold mb-0 text-dark">Management Shortcuts</h3>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Quick Actions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a asp-controller="Users" asp-action="Create" class="btn btn-outline-primary">Create New User</a>
-                        <a asp-controller="Locations" asp-action="Create" class="btn btn-outline-success">Create New Location</a>
-                        <a asp-controller="TaskItems" asp-action="Index" class="btn btn-outline-info">Manage Tasks</a>
-                    </div>
+            <div class="card-body p-4 pt-0">
+                <div class="d-grid gap-3">
+                    <a asp-controller="Users" asp-action="Create" class="btn btn-light border p-3 text-start rounded-3 position-relative shadow-sm-hover">
+                        ➕ Add New User Account
+                        <span class="position-absolute end-0 top-50 translate-middle-y me-3 opacity-50">→</span>
+                    </a>
+                    <a asp-controller="Locations" asp-action="Create" class="btn btn-light border p-3 text-start rounded-3 position-relative shadow-sm-hover">
+                        🏠 Register New Managed Location
+                        <span class="position-absolute end-0 top-50 translate-middle-y me-3 opacity-50">→</span>
+                    </a>
+                    <a asp-controller="TaskItems" asp-action="Index" class="btn btn-light border p-3 text-start rounded-3 position-relative shadow-sm-hover text-primary fw-bold border-primary">
+                        💼 System Task Oversight
+                        <span class="position-absolute end-0 top-50 translate-middle-y me-3 opacity-100">🚀</span>
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .bg-gradient-brand {
+        background: linear-gradient(135deg, var(--homera-green-dark) 0%, var(--homera-green) 100%);
+    }
+    .shadow-sm-hover {
+        transition: all 0.2s ease;
+    }
+    .shadow-sm-hover:hover {
+        transform: translateX(5px);
+        border-color: var(--homera-green) !important;
+        background-color: white !important;
+    }
+</style>

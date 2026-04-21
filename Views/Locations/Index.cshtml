@@ -1,59 +1,79 @@
 @model IEnumerable<Homera.Models.Location>
+@using Homera.Models.Enums
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "My Locations";
 }
 
-<h1>Index</h1>
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h1 class="h2 fw-bold text-dark">My Locations</h1>
+        <p class="text-muted small">Manage the places where you need care services.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        @if (User.IsInRole(UserRole.Client) || User.IsInRole(UserRole.Administrator))
+        {
+            <a asp-action="Create" class="btn btn-primary shadow-sm px-4">
+                <span class="me-1">+</span> New Location
+            </a>
+        }
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Neighbourhood)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.City)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Country)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Client)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Neighbourhood)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.City)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Country)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Client!.FirstName)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+@if (!Model.Any())
+{
+    <div class="card border-0 shadow-sm rounded-4 py-5 text-center">
+        <div class="card-body">
+            <div class="mb-3" style="font-size: 3rem;">📍</div>
+            <h3 class="h5 fw-bold">No locations yet</h3>
+            <p class="text-muted small">Add your first home address to start booking services.</p>
+            <a asp-action="Create" class="btn btn-primary mt-3">Add Location</a>
+        </div>
+    </div>
 }
-    </tbody>
-</table>
+else
+{
+    <div class="row g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm rounded-4 hover-shadow transition">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="bg-primary-light text-primary rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                <span style="font-size: 1.2rem;">🏠</span>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown">
+                                    ⋮
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item small" asp-action="Edit" asp-route-id="@item.Id">Edit Details</a></li>
+                                    <li><a class="dropdown-item small" asp-action="Details" asp-route-id="@item.Id">View Details</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item small text-danger" asp-action="Delete" asp-route-id="@item.Id">Remove</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h3 class="h5 fw-bold mb-1">@item.Name</h3>
+                        <p class="text-muted small mb-3">@item.Neighbourhood, @item.City</p>
+
+                        <div class="mt-auto">
+                            <div class="d-flex align-items-center text-muted small mb-2">
+                                <span class="me-2">📍</span> @item.Street @item.HouseNumber
+                            </div>
+                            @if (User.IsInRole(UserRole.Administrator) && item.Client != null)
+                            {
+                                <div class="mt-3 pt-3 border-top d-flex align-items-center">
+                                    <div class="bg-light rounded-circle p-1 me-2" style="width: 24px; height: 24px; font-size: 0.7rem; text-align: center;">👤</div>
+                                    <span class="text-muted smaller">Owner: <strong>@item.Client.FirstName @item.Client.LastName</strong></span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
