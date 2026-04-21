@@ -2,8 +2,23 @@
 @{
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
 }
-<ul class="nav nav-pills flex-column">
-    <li class="nav-item"><a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">Profile</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Email</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Password</a></li>
-</ul>
+<div class="nav flex-column gap-2">
+    <a class="nav-link py-2 px-3 rounded-3 @(ManageNavPages.IndexNavClass(ViewContext) == "active" ? "bg-primary text-white shadow-sm" : "text-dark bg-hover-light")" id="profile" asp-page="./Index">
+        <span class="me-2">👤</span> Profile
+    </a>
+    @if (!User.IsInRole("Administrator"))
+    {
+        <a class="nav-link py-2 px-3 rounded-3 @(ManageNavPages.EmailNavClass(ViewContext) == "active" ? "bg-primary text-white shadow-sm" : "text-dark bg-hover-light")" id="email" asp-page="./Email">
+            <span class="me-2">✉️</span> Email
+        </a>
+        <a class="nav-link py-2 px-3 rounded-3 @(ManageNavPages.ChangePasswordNavClass(ViewContext) == "active" ? "bg-primary text-white shadow-sm" : "text-dark bg-hover-light")" id="change-password" asp-page="./ChangePassword">
+            <span class="me-2">🔒</span> Password
+        </a>
+    }
+</div>
+
+<style>
+    .bg-hover-light:hover {
+        background-color: var(--bs-gray-100);
+    }
+</style>
