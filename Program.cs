@@ -17,7 +17,7 @@ namespace Homera
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<User>(options =>
+            builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = false;
                 options.SignIn.RequireConfirmedEmail = false;
@@ -28,8 +28,9 @@ namespace Homera
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = false;
             })
-                .AddRoles<IdentityRole<int>>()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders()
+                .AddDefaultUI();
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();

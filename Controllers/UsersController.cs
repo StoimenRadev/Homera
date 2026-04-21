@@ -212,6 +212,21 @@ namespace Homera.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PromoteToHousekeeper(int id)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null) return NotFound();
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            await _userManager.AddToRoleAsync(user, UserRole.Housekeeper);
+
+            TempData["Success"] = $"User {user.UserName} has been promoted to Housekeeper.";
+            return RedirectToAction(nameof(Index));
+        }
+
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.Id == id);

@@ -29,6 +29,12 @@ namespace Homera.Controllers
             _hostEnvironment = hostEnvironment;
         }
 
+        [AllowAnonymous]
+        public IActionResult Services()
+        {
+            return View();
+        }
+
         // GET: TaskItems
         public async Task<IActionResult> Index()
         {
